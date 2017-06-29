@@ -4,13 +4,13 @@
   with_first_found:
     - files:
         - "{{ lookup('env','PWD') }}/group_vars/os_{{ pop }}_{{ proj }}_{{ distro }}.yml"
-        - "{{ lookup('env','PWD') }}/roles/{{ plat }}/defaults/main.yml"
+        - "{{ lookup('env','PWD') }}/roles/sp/defaults/main.yml"
       skip: true
 
-- include_vars: "{{ lookup('env','PWD') }}/roles/{{ plat }}/defaults/main.yml"
+- include_vars: "{{ lookup('env','PWD') }}/roles/sp/defaults/main.yml"
 
 - lineinfile:
-    path: "/etc/hosts"
+    dest: "/etc/hosts"
     line: "{{ public_ip }} {{ plat_hostname }}"
     create: yes
     state: present
@@ -52,10 +52,12 @@
   systemd: name=docker state=restarted daemon_reload=yes
   when: ansible_os_family == "RedHat"
 
-- name: Docker User Defined Network (SP)
-  shell: 'docker network create --driver=bridge \
-    --subnet=172.20.2.0/24 --gateway=172.20.2.1 \
-    --ip-range=172.20.2.128/25 "{{ docker_network_name }}"'
+
+- name: Docker User Defined Network son-sp
+  shell: 'if ! [[ "$(docker network inspect {{ docker_network_name }} 2> /dev/null)" == "" ]]; then docker network rm {{ docker_network_name }} ; fi & service docker restart'
+
+- name: Docker creating network
+  shell: 'docker network create --driver=bridge --subnet=172.20.1.0/24 --gateway=172.20.1.1 --ip-range=172.20.1.128/25 "{{ docker_network_name }}"'
 
 - name: force all notified handlers to run at this point, not waiting for normal sync points
   meta: flush_handlers
@@ -98,6 +100,3 @@
 
 # deploy Security Gateway
 - include: sec-gw.yml
-
-# deploy Google cAdvisor
-#- include: cadvisor.yml

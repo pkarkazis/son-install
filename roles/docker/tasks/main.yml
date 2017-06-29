@@ -8,22 +8,11 @@
     - "{{ ansible_os_family }}.yml"
     - "default.yml"
 
+- include_vars: "{{ lookup('env','PWD') }}/roles/sp/defaults/main.yml"
+
 - group:
     name: docker
     state: present
-
-#- file:
-#    path: /etc/ansible/group_vars
-#    state: directory
-#    mode: 0755
-
-#- name: create global/vars file for Ansible
-#  copy:
-#    src: group_vars.all
-#    dest: /etc/ansible/group_vars/all
-#    owner: root
-#    group: root
-#    mode: 0644
 
 - name: create a directory for Docker logging
   file:

@@ -1,11 +1,8 @@
 ---
 
-- hosts: "{{ target }}"
+- hosts: "{{ target | default('localhost') }}"
   become: true
   connection: ssh
-#  vars_files:
-#    - "vars/common.yml"
-#    - [ "vars/{{ ansible_os_family }}.yml", "vars/os_defaults.yml" ]
   pre_tasks:
     - debug:
         msg: "example of EXTERNAL VARIABLES: -e 'target=localhost sp_ver=latest'"
@@ -19,6 +16,5 @@
       become: true
 
   roles:
-    - docker
     - { role: sp, ver: '{{ ver }}' }
 
