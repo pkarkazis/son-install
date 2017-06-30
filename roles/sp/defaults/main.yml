@@ -6,9 +6,17 @@ pop: alabs
 proj: demo
 distro: xenial
 target: localhost 
-vm_user: testbed 
 plat: sp 
-public_ip: 172.16.0.21 
+
+# The vm_user is used to install and manage the Service Platform
+vm_user: ubuntu
+
+# By default public IP is the VM IP address
+# Can be changed by the external IP address to access the VM
+# DEFAULT: "{{ ansible_default_ipv4.address }}"
+public_ip: {{ ansible_default_ipv4.address }}
+
+# Hostname
 plat_hostname: sonata-sp
 
 # Docker network internal segment name
@@ -16,7 +24,7 @@ docker_network_name: son-sp
 
 # SONATA 5G NFV SP development/latest version
 sp_ver: 2.1
-domain_name: 172.16.0.21 
+domain_name: {{ ansible_default_ipv4.address }}
 fqdn: "{{ domain_name }}"
 
 sp_user: sonata
@@ -37,4 +45,3 @@ mon_db_name: "monitoring"
 
 gtk_keycloak_pass: "admin"
 gtk_keycloak_user: "admin"
-
