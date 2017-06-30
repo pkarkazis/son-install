@@ -1,21 +1,40 @@
 ---
 # defaults file for sp
 
+nbofvms: 1
 pop: alabs
 proj: demo
 distro: xenial
+target: localhost 
+vm_user: testbed 
+plat: sp 
+public_ip: 172.16.0.21 
+plat_hostname: sonata-sp
 
-# VARs for MONITOR
-upassword: sonata
-urootpw: 1234
-dbname: monitoring
-dbuser: monitoringuser
-
-# Docker network segment
+# Docker network internal segment name
 docker_network_name: son-sp
 
 # SONATA 5G NFV SP development/latest version
-sp_ver: dev
-domain_name: sonata-nfv.eu
-public_ip: 172.31.6.86
-public_ip: 172.31.6.107
+sp_ver: 2.1
+domain_name: 172.16.0.21 
+fqdn: "{{ domain_name }}"
+
+sp_user: sonata
+sp_pass: "$1$SRc2ws2Z$rSdCC/UKiatagNdfsTVuf0"
+
+# Postgres Gatekeeper Password:
+gtk_db_pass: "sonata"
+gtk_db_user: "sonata"
+gtk_db_name: "gatekeeper"
+
+# Postgres Monitoring Password:
+mon_db_pass: "sonata"
+mon_db_user: "monitoringuser"
+mon_db_name: "monitoring"
+
+#gtk_keycloak_pass: "sonatapasswd"
+#gtk_keycloak_user: "sonata"
+
+gtk_keycloak_pass: "admin"
+gtk_keycloak_user: "admin"
+

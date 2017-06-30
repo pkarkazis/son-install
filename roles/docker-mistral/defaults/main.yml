@@ -1,4 +1,0 @@
----
-# defaults file for mistral
-
-docker_network_name: son-mistral

@@ -10,8 +10,8 @@
       broker_uri: "amqp://guest:guest@son-broker:5672/%2F"
       repo_host: "son-postgres"
       repo_port: "5432"
-      repo_user: "sonatatest"
-      repo_pass: "sonata"
+      repo_user: "{{ gtk_db_user }}"
+      repo_pass: "{{ gtk_db_pass }}"
       network_mode: bridge
     networks:
       - name: "{{ docker_network_name }}"

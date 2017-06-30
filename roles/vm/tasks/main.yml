@@ -4,58 +4,31 @@
 - name: load variables per Site, Tenant and Distro
   include_vars: "{{ item }}"
   with_first_found:
-    - "{{ lookup('env','PWD') }}/roles/{{ plat }}/vars/os_{{ pop }}_{{ proj }}_{{ distro }}.yml"
-    - "{{ lookup('env','PWD') }}/group_vars/os_{{ pop }}_{{ proj }}_{{ distro }}.yml"
-    - "defaults.yml"
+    - files:
+        - "{{ lookup('env','PWD') }}/roles/{{ plat }}/vars/os_{{ pop }}_{{ proj }}_{{ distro }}.yml"
+        - "{{ lookup('env','PWD') }}/group_vars/os_{{ pop }}_{{ proj }}_{{ distro }}.yml"
+        - "defaults.yml"
+      skip: true
 
-- include: "{{ lookup('env','PWD') }}/roles/{{ plat }}/files/secgrp.yml"
+- include: "{{ lookup('env','PWD') }}/roles/{{ plat }}/tasks/secgrp.yml"
 
-- name: launch a new Instance(s)
-  vars:
-    local_home: "{{ lookup('env','PWD') }}"
-  os_server:
-    # http://docs.openstack.org/developer/os-client-config/
-    state: present
-    cloud: "os_{{ pop }}_{{ proj }}"
-    name: "{{ plat }}-{{ pop }}-{{ proj }}-{{ distro }}-{{ item }}-{{ ansible_date_time.epoch }}"
-    image: "{{ image }}"
-    key_name: "{{ key_name }}"
-    flavor: "{{ flavor }}"
-    availability_zone: "{{ availability_zone }}"
-    security_groups:
-      - ssh-secgrp
-      - "{{ os_security_groups }}"
-    #security_groups: "{{ os_security_groups + hostvars[item].os_security_groups | default(os_security_groups) }}"
-    nics: 
-      - net-id: "{{ int_net_id }}"
-    userdata: "{{ lookup('file', '{{ local_home }}/userdata/{{ distro }}.sh') }}"
-    meta:
-      hostname: "{{ plat }}-{{ item }}-{{ ansible_date_time.epoch }}"
-      group: "{{ plat }}"
-    timeout: 180
-    wait: yes
-  with_sequence: "start=1 end={{ nbofvms | default(1) }} format=%02x"
-  register: "newvm"
+- include: "{{ lookup('env','PWD') }}/roles/{{ plat }}/tasks/networks.yml"
 
-
-- set_fact:
-    public_ip: "{{ item.openstack.accessIPv4 }}"
-  with_items: "{{ newvm.results }}"
+- include: "{{ lookup('env','PWD') }}/roles/vm/tasks/vm.yml"
 
 - lineinfile:
-    path: "{{ lookup('env','PWD') }}/roles/{{ plat }}/defaults/main.yml"
+    path: "{{ lookup('env','PWD') }}/roles/{{ plat }}/vars/main.yml"
     line: "public_ip: {{ item.openstack.accessIPv4 }}"
     create: yes
     state: present
   with_items: "{{ newvm.results }}"
 
 - lineinfile:
-    path: "{{ lookup('env','PWD') }}/roles/docker/files/group_vars.yml"
-    line: "public_ip: {{ item.openstack.accessIPv4 }}"
+    path: "{{ lookup('env','PWD') }}/roles/{{ plat }}/vars/main.yml"
+    line: "plat_hostname: {{ item.openstack.name }}"
     create: yes
     state: present
   with_items: "{{ newvm.results }}"
-
 
 # Add private key (if it does not exist, without passing regexp)
 # https://relativkreativ.at/articles/how-to-use-ansibles-lineinfile-module-in-a-bulletproof-way
@@ -107,6 +80,16 @@
   retries: 20
   delay: 10
   with_items: "{{ newvm.results }}"
+
+- name: install Python 2.7 to the new deployed instance, if Xenial
+  shell: >
+    ssh -oControlMaster=auto -oControlPersist=60s -oUserKnownHostsFile=/dev/null -oBatchMode=yes -oStrictHostKeyChecking=no -i ~/.ssh/{{ item.openstack.key_name }}.pem -l {{ vm_user }} {{ item.openstack.accessIPv4 }} 'sudo apt-get update && sudo apt-get install python-minimal -y'
+  register: result
+  until: result|success
+  retries: 20
+  delay: 10
+  with_items: "{{ newvm.results }}"
+  when: distro == "xenial"
 
 - pause:
     minutes: 2

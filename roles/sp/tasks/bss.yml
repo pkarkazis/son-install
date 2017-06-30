@@ -5,14 +5,16 @@
   docker_container:
     name: son-bss
     image: "sonatanfv/son-yo-gen-bss:{{ sp_ver }}"
-    command: "grunt serve:integration --gkApiUrl=http://{{ domain_name }}/api/v2 --hostname={{ domain_name }} --userManagementEnabled=false --licenseManagementEnabled=false"
+    command: "grunt serve:integration --gkApiUrl=http://{{ fqdn }}/api/v2 --hostname=0.0.0.0 --userManagementEnabled=false --licenseManagementEnabled=false"
     state: started
-    hostname: "{{ domain_name }}"
+    hostname: "{{ fqdn }}"
     network_mode: bridge
     networks:
       - name: "{{ docker_network_name }}"
         aliases:
           - son-bss
+        etc_host: 
+          - "{{ fqdn }}"
     published_ports:
       - "25001:1337"
       - "25002:1338"
