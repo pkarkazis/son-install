@@ -9,12 +9,12 @@ target: localhost
 plat: sp 
 
 # The vm_user is used to install and manage the Service Platform
-vm_user: ubuntu
+vm_user: "{ ansible_ssh_user }"
 
 # By default public IP is the VM IP address
 # Can be changed by the external IP address to access the VM
 # DEFAULT: "{{ ansible_default_ipv4.address }}"
-public_ip: {{ ansible_default_ipv4.address }}
+public_ip: "{{ ansible_default_ipv4.address }}"
 
 # Hostname
 plat_hostname: sonata-sp
@@ -24,7 +24,7 @@ docker_network_name: son-sp
 
 # SONATA 5G NFV SP development/latest version
 sp_ver: 2.1
-domain_name: {{ ansible_default_ipv4.address }}
+domain_name: "{{ ansible_default_ipv4.address }}"
 fqdn: "{{ domain_name }}"
 
 sp_user: sonata
@@ -40,8 +40,6 @@ mon_db_pass: "sonata"
 mon_db_user: "monitoringuser"
 mon_db_name: "monitoring"
 
-#gtk_keycloak_pass: "sonatapasswd"
-#gtk_keycloak_user: "sonata"
-
+# Keycloak credentials
 gtk_keycloak_pass: "admin"
 gtk_keycloak_user: "admin"

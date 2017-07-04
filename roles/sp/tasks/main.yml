@@ -54,7 +54,15 @@
 
 
 - name: Docker User Defined Network son-sp
-  shell: 'if ! [[ "$(docker network inspect {{ docker_network_name }} 2> /dev/null)" == "" ]]; then docker network rm {{ docker_network_name }} ; fi & service docker restart'
+  shell: 'if ! [[ "$(docker network inspect {{ docker_network_name }} 2> /dev/null)" == "" ]]; then docker network rm {{ docker_network_name }} ; fi'
+
+- name: restart docker on Upstart (Ubuntu 14)
+  service: name=docker state=restarted
+  when: ansible_os_family == "Debian"
+
+- name: restart docker on Systemd (Ubuntu 16 and CentOS 7)
+  systemd: name=docker state=restarted daemon_reload=yes
+  when: ansible_os_family == "RedHat"
 
 - name: Docker creating network
   shell: 'docker network create --driver=bridge --subnet=172.20.1.0/24 --gateway=172.20.1.1 --ip-range=172.20.1.128/25 "{{ docker_network_name }}"'
